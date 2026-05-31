@@ -1,3 +1,6 @@
+const reservationRepository = require('../repositories/reservation-repository');
+const userRepository        = require('../repositories/user-repository');
+
 class ReservationService {
   async createReservation(_data, _user) {
     throw Object.assign(new Error('Not implemented'), { status: 501 });
@@ -15,8 +18,15 @@ class ReservationService {
     throw Object.assign(new Error('Not implemented'), { status: 501 });
   }
 
-  async getUserReservations(_userId, _requestingUser) {
-    throw Object.assign(new Error('Not implemented'), { status: 501 });
+  async getUserReservations(userId, requestingUser) {
+    const user = await userRepository.findById(userId);
+
+    if (user.profile === 'coordinator') {
+      return reservationRepository.findAll({ where: { user_id: userId } });
+    }
+
+    const allReservations = await reservationRepository.findAll();
+    return allReservations.filter(r => r.user_id === parseInt(userId));
   }
 }
 
