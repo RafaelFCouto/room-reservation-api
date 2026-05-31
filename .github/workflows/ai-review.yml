@@ -1,0 +1,22 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Send PR event to AI Review Service
+        run: |
+          SIG=$(openssl dgst -sha256 -hmac "${{ secrets.GITHUB_WEBHOOK_SECRET }}" "$GITHUB_EVENT_PATH" \
+            | awk '{print "sha256="$2}')
+
+          curl -f -s -X POST "${{ secrets.REVIEW_SERVICE_URL }}/webhook" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: pull_request" \
+            -H "X-Hub-Signature-256: $SIG" \
+            --data-binary "@$GITHUB_EVENT_PATH"

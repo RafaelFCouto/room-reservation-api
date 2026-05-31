@@ -1,0 +1,17 @@
+{
+  "name": "room-reservation-api",
+  "version": "1.0.0",
+  "description": "Room reservation API for IFAM campus — PoC target for AI-assisted code review (TCC)",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+  },
+  "dependencies": {
+    "express":           "^4.18.2",
+    "sequelize":         "^6.37.3",
+    "sqlite3":           "^5.1.7",
+    "swagger-jsdoc":     "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
