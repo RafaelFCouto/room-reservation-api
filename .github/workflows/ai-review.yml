@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Send PR event to AI Review Service
         run: |
-          SIG=$(openssl dgst -sha256 -hmac "${{ secrets.GITHUB_WEBHOOK_SECRET }}" "$GITHUB_EVENT_PATH" \
+          SIG=$(openssl dgst -sha256 -hmac "${{ secrets.WEBHOOK_SECRET }}" "$GITHUB_EVENT_PATH" \
             | awk '{print "sha256="$2}')
 
           curl -f -s -X POST "${{ secrets.REVIEW_SERVICE_URL }}/webhook" \
