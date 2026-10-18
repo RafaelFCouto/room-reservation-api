@@ -1,19 +1,15 @@
 const roomRepository        = require('../repositories/room-repository');
 const reservationRepository = require('../repositories/reservation-repository');
 
+const { timeRange } = require('../utils/input');
+
 class RoomService {
   async getAvailableRooms(startTime, endTime) {
-    const rooms = await roomRepository.findAll();
-
-    const available = [];
-    for (const room of rooms) {
-      const reservations = await reservationRepository.findActiveByRoomId(room.id);
-      if (reservations.length === 0) {
-        available.push(room);
-      }
-    }
-
-    return available;
+    const range = timeRange(startTime, endTime, true);
+    const occupiedIds = range
+      ? await reservationRepository.findOccupiedRoomIds(range.start, range.end)
+      : await reservationRepository.findOccupiedRoomIds();
+    return roomRepository.findExcludingIds(occupiedIds);
   }
 
   async createRoom(_data, _user) {

@@ -1,9 +1,10 @@
 const reservationService = require('../services/reservation-service');
+const { positiveId, objectBody } = require('../utils/input');
 
 class ReservationController {
   async createReservation(req, res) {
     try {
-      const reservation = await reservationService.createReservation(req.body, req.user);
+      const reservation = await reservationService.createReservation(objectBody(req.body), req.user);
       return res.status(201).json(reservation);
     } catch (err) {
       return res.status(err.status || 500).json({ error: err.message });
@@ -13,7 +14,7 @@ class ReservationController {
   async cancelReservation(req, res) {
     try {
       const reservation = await reservationService.cancelReservation(
-        req.params.id,
+        positiveId(req.params.id),
         req.user
       );
       return res.status(200).json(reservation);
@@ -24,9 +25,9 @@ class ReservationController {
 
   async updateReservationStatus(req, res) {
     try {
-      const { status } = req.body;
+      const { status } = objectBody(req.body);
       const reservation = await reservationService.updateReservationStatus(
-        req.params.id,
+        positiveId(req.params.id),
         status,
         req.user
       );
@@ -39,7 +40,7 @@ class ReservationController {
   async confirmReservation(req, res) {
     try {
       const reservation = await reservationService.confirmReservation(
-        req.params.id,
+        positiveId(req.params.id),
         req.user
       );
       return res.status(200).json(reservation);
@@ -51,7 +52,7 @@ class ReservationController {
   async getUserReservations(req, res) {
     try {
       const reservations = await reservationService.getUserReservations(
-        req.params.id,
+        positiveId(req.params.id),
         req.user
       );
       return res.status(200).json(reservations);
