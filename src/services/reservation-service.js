@@ -6,7 +6,7 @@ class ReservationService {
     throw Object.assign(new Error('Not implemented'), { status: 501 });
   }
 
-  async cancelReservation(id, user) {
+  async cancelReservation(id, _user) {
     const reservation = await reservationRepository.findById(id);
 
     if (!reservation) {
