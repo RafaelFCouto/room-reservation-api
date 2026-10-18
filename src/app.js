@@ -16,6 +16,12 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/rooms',        roomRoutes);
 app.use('/reservations', reservationRoutes);
 
+app.use((err, _req, res, _next) => {
+  const status = err.status || 500;
+  if (status >= 500) console.error(err);
+  return res.status(status).json({ error: status >= 500 ? 'Internal server error' : err.message });
+});
+
 async function bootstrap() {
   await sequelize.sync({ force: true });
   await seed();
@@ -25,6 +31,9 @@ async function bootstrap() {
   });
 }
 
-bootstrap();
+bootstrap().catch(err => {
+  console.error('Failed to start Room Reservation API', err);
+  process.exitCode = 1;
+});
 
 module.exports = app;

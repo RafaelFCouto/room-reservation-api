@@ -18,15 +18,13 @@ class ReservationService {
     throw Object.assign(new Error('Not implemented'), { status: 501 });
   }
 
-  async getUserReservations(userId, requestingUser) {
+  async getUserReservations(userId, _requestingUser) {
     const user = await userRepository.findById(userId);
 
-    if (user.profile === 'coordinator') {
-      return reservationRepository.findAll({ where: { user_id: userId } });
+    if (!user) {
+      throw Object.assign(new Error('User not found'), { status: 404 });
     }
-
-    const allReservations = await reservationRepository.findAll();
-    return allReservations.filter(r => r.user_id === parseInt(userId));
+    return reservationRepository.findByUserId(userId);
   }
 }
 

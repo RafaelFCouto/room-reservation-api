@@ -1,4 +1,5 @@
 const roomService = require('../services/room-service');
+const { objectBody } = require('../utils/input');
 
 class RoomController {
   async getAvailableRooms(req, res) {
@@ -13,16 +14,7 @@ class RoomController {
 
   async createRoom(req, res) {
     try {
-      const { name, capacity, building, resources, status } = req.body;
-
-      if (!name || !building) {
-        return res.status(422).json({ error: 'name and building are required' });
-      }
-
-      const room = await roomService.createRoom(
-        { name, capacity, building, resources, status },
-        req.user
-      );
+      const room = await roomService.createRoom(objectBody(req.body), req.user);
       return res.status(201).json(room);
     } catch (err) {
       return res.status(err.status || 500).json({ error: err.message });
