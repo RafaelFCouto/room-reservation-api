@@ -3,45 +3,40 @@ const roomRepository        = require('../repositories/room-repository');
 const { Reservation }       = require('../db/index');
 const Room                  = require('../models/Room');
 
+const { positiveId, timeRange, invalid } = require('../utils/input');
+
+const MAX_RESERVATION_DURATION_MS = 4 * 60 * 60 * 1000;
+
 class ReservationService {
   async createReservation(data, user) {
     const { room_id, start_time, end_time, purpose } = data;
+    const roomId = positiveId(room_id);
+    const { start, end } = timeRange(start_time, end_time);
+    if (purpose !== undefined && purpose !== null && typeof purpose !== 'string') {
+      throw invalid('purpose must be a string');
+    }
 
-    const room      = await roomRepository.findById(room_id);
-    const conflicts = await reservationRepository.findConflicts(room_id, start_time, end_time);
-
+    const [room, conflicts, activeCount] = await Promise.all([
+      roomRepository.findById(roomId),
+      reservationRepository.findConflicts(roomId, start, end),
+      reservationRepository.countActiveByUserId(user.id),
+    ]);
+    if (!room) throw Object.assign(new Error('Room not found'), { status: 404 });
     if (room.status === Room.STATUS.MAINTENANCE) {
       throw Object.assign(new Error('Room is under maintenance'), { status: 422 });
     }
-
     if (conflicts.length > 0) {
       throw Object.assign(new Error('Room is not available for the requested time slot'), { status: 409 });
     }
-
-    const activeCount = await reservationRepository.countActiveByUserId(user.id);
     if (activeCount >= 1) {
       throw Object.assign(new Error('You already have an active reservation'), { status: 409 });
     }
-
-    const startMs  = new Date(start_time).getTime();
-    const endMs    = new Date(end_time).getTime();
-    const duration = endMs - startMs;
-
-    if (duration > 14400000) {
+    if (end - start > MAX_RESERVATION_DURATION_MS) {
       throw Object.assign(new Error('Reservation exceeds maximum allowed duration'), { status: 422 });
     }
-
-    if (startMs >= endMs) {
-      throw Object.assign(new Error('end_time must be after start_time'), { status: 422 });
-    }
-
     return reservationRepository.create({
-      room_id,
-      user_id:    user.id,
-      start_time: new Date(start_time),
-      end_time:   new Date(end_time),
-      status:     Reservation.STATUS.PENDING,
-      purpose:    purpose || null,
+      room_id: roomId, user_id: user.id, start_time: start, end_time: end,
+      status: Reservation.STATUS.PENDING, purpose: purpose || null,
     });
   }
 
