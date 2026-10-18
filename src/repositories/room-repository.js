@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Room } = require('../db/index');
 
 class RoomRepository {
@@ -7,6 +8,14 @@ class RoomRepository {
 
   findById(id) {
     return Room.findByPk(id);
+  }
+
+  findByName(name) {
+    return Room.findOne({ where: { name } });
+  }
+
+  findExcludingIds(roomIds) {
+    return Room.findAll({ where: { id: { [Op.notIn]: roomIds } } });
   }
 
   create(data) {

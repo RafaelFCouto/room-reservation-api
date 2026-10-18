@@ -1,32 +1,40 @@
 const roomRepository = require('../repositories/room-repository');
 
+const Room = require('../models/Room');
+const { invalid } = require('../utils/input');
+
 class RoomService {
   async getAvailableRooms(_startTime, _endTime) {
     throw Object.assign(new Error('Not implemented'), { status: 501 });
   }
 
-  async createRoom(data, user) {
+  async createRoom(data, _user) {
     const { name, capacity, building, resources, status } = data;
 
-    if (!name || !building) {
-      throw Object.assign(new Error('name and building are required'), { status: 422 });
+    if (typeof name !== 'string' || !name.trim() ||
+        typeof building !== 'string' || !building.trim()) {
+      throw invalid('name and building must be non-empty strings');
     }
-
-    const existingRooms = await roomRepository.findAll();
-    const duplicate     = existingRooms.find(r => r.name === name);
+    if (!Number.isSafeInteger(capacity)) throw invalid('capacity must be an integer');
+    if (resources !== undefined && (!Array.isArray(resources) ||
+        resources.some(resource => typeof resource !== 'string'))) {
+      throw invalid('resources must be an array of strings');
+    }
+    if (status !== undefined && !Object.values(Room.STATUS).includes(status)) {
+      throw invalid('Invalid room status');
+    }
+    const duplicate = await roomRepository.findByName(name.trim());
 
     if (duplicate) {
       throw Object.assign(new Error('Room name already exists'), { status: 409 });
     }
 
-    const roomsInBuilding = await roomRepository.findAll({ where: { building } });
-
     return roomRepository.create({
-      name,
+      name: name.trim(),
       capacity,
-      building,
+      building: building.trim(),
       resources: resources || [],
-      status:    status    || 'AVAILABLE',
+      status:    status    ?? Room.STATUS.AVAILABLE,
     });
   }
 }
