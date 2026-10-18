@@ -14,7 +14,7 @@ class ReservationRepository {
     return Reservation.findAll({
       where: {
         room_id: roomId,
-        status:  { [Op.in]: ['PENDING', 'CONFIRMED'] },
+        status:  { [Op.in]: [Reservation.STATUS.PENDING, Reservation.STATUS.CONFIRMED] },
       },
     });
   }
@@ -23,7 +23,7 @@ class ReservationRepository {
     return Reservation.findAll({
       where: {
         room_id:    roomId,
-        status:     { [Op.in]: ['PENDING', 'CONFIRMED'] },
+        status:     { [Op.in]: [Reservation.STATUS.PENDING, Reservation.STATUS.CONFIRMED] },
         start_time: { [Op.lt]:  new Date(endTime)   },
         end_time:   { [Op.gt]: new Date(startTime) },
       },
@@ -34,9 +34,26 @@ class ReservationRepository {
     return Reservation.count({
       where: {
         user_id: userId,
-        status:  { [Op.in]: ['PENDING', 'CONFIRMED'] },
+        status:  { [Op.in]: [Reservation.STATUS.PENDING, Reservation.STATUS.CONFIRMED] },
       },
     });
+  }
+
+  findByUserId(userId) {
+    return Reservation.findAll({ where: { user_id: userId } });
+  }
+
+  findOccupiedRoomIds(startTime, endTime) {
+    const where = {
+      status: { [Op.in]: [Reservation.STATUS.PENDING, Reservation.STATUS.CONFIRMED] },
+    };
+    if (startTime !== undefined && endTime !== undefined) {
+      where.start_time = { [Op.lt]: new Date(endTime) };
+      where.end_time = { [Op.gt]: new Date(startTime) };
+    }
+    return Reservation.findAll({
+      attributes: ['room_id'], where, group: ['room_id'], raw: true,
+    }).then(rows => rows.map(row => row.room_id));
   }
 
   create(data) {
