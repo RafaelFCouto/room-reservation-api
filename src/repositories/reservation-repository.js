@@ -19,6 +19,7 @@ class ReservationRepository {
     });
   }
 
+  // Regras aplicaveis: RN-01 (docs/regras_negocio.md).
   findConflicts(roomId, startTime, endTime) {
     return Reservation.findAll({
       where: {
@@ -30,6 +31,7 @@ class ReservationRepository {
     });
   }
 
+  // Regras aplicaveis: RN-04 (docs/regras_negocio.md).
   countActiveByUserId(userId) {
     return Reservation.count({
       where: {
