@@ -26,7 +26,7 @@ class ReservationRepository {
         room_id:    roomId,
         status:     { [Op.in]: [Reservation.STATUS.PENDING, Reservation.STATUS.CONFIRMED] },
         start_time: { [Op.lt]:  new Date(endTime)   },
-        end_time:   { [Op.gt]: new Date(startTime) },
+        end_time:   { [Op.gte]: new Date(startTime) },
       },
     });
   }
@@ -34,10 +34,7 @@ class ReservationRepository {
   // Regras aplicaveis: RN-04 (docs/regras_negocio.md).
   countActiveByUserId(userId) {
     return Reservation.count({
-      where: {
-        user_id: userId,
-        status:  { [Op.in]: [Reservation.STATUS.PENDING, Reservation.STATUS.CONFIRMED] },
-      },
+      where: { user_id: userId },
     });
   }
 
