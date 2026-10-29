@@ -1,7 +1,11 @@
 # Regras de Negócio — room-reservation-api
 
-Este documento descreve as regras de negócio implementadas na API de reserva de salas,
+Este documento descreve as regras de negócio especificadas para a API de reserva de salas,
 usadas como contexto para avaliação dos comentários gerados pela IA.
+
+Os identificadores oficiais são **RN-01 a RN-07**. Este documento reúne a identidade, o título e o vínculo de cada regra com sua task Jira. As tasks identificam as fontes dos requisitos; não substituem os códigos das RNs nos achados da revisão.
+
+Comentários `Regras aplicaveis: RN-...` nas funções indicam o escopo esperado de cada operação, não comprovam que a regra esteja implementada corretamente. A revisão deve demonstrar a violação com base no requisito e no código. O serviço revisor consulta este documento e as tasks Jira para identificar a regra aplicável.
 
 ---
 
